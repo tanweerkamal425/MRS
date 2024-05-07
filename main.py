@@ -16,6 +16,9 @@ workout = pd.read_csv("datasets/workout_df.csv")
 description = pd.read_csv("datasets/description.csv")
 medications = pd.read_csv('datasets/medications.csv')
 diets = pd.read_csv("datasets/diets.csv")
+sym_ser = pd.read_csv("datasets/Symptom-severity.csv")
+sym_ser = sym_ser.drop(sym_ser.columns[1], axis=1)
+sym_array = sym_ser.values.flatten()
 
 
 # load model===========================================
@@ -61,7 +64,7 @@ def get_predicted_value(patient_symptoms):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", symptoms=sym_array)
 
 # Define a route for the home page
 @app.route('/predict', methods=['GET', 'POST'])
@@ -77,9 +80,15 @@ def home():
         else:
 
             # Split the user's input into a list of symptoms (assuming they are comma-separated)
-            user_symptoms = [s.strip() for s in symptoms.split(',')]
+            if symptoms is not None:
+                user_symptoms = [s.strip() for s in symptoms.split(',')]
+            else:
+                # Handle the case where symptoms is None
+                user_symptoms = []
+
+            # user_symptoms = [s.strip() for s in symptoms.split(',')]
             # Remove any extra characters, if any
-            user_symptoms = [symptom.strip("[]' ") for symptom in user_symptoms]
+            # user_symptoms = [symptom.strip("[]' ") for symptom in user_symptoms]
             predicted_disease = get_predicted_value(user_symptoms)
             dis_des, precautions, medications, rec_diet, workout = helper(predicted_disease)
 
@@ -89,9 +98,9 @@ def home():
 
             return render_template('index.html', predicted_disease=predicted_disease, dis_des=dis_des,
                                    my_precautions=my_precautions, medications=medications, my_diet=rec_diet,
-                                   workout=workout)
+                                   workout=workout, symptoms=sym_array)
 
-    return render_template('index.html')
+    return render_template('index.html', symptoms=sym_array)
 
 
 
