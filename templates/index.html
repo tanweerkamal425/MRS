@@ -291,19 +291,18 @@ body {
 
 
 <!-- main form of page -->
-<h1 class="mt-4 my-4 text-center text-green" style="color: #EC4444;;
-text-shadow: 0px 0px 2px #685d5d;"><b><i>MEDICAL RECOMMENDATION SYSTEM</i></b></h1>
-<div class="container my-4 mt-4" style="background: linear-gradient(to right, #72d5ca, #d2ede9);box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);; color: white; border-radius: 15px; padding: 40px;">
-    <form action="/predict" method="post">
+<h1 class="mt-4 my-4 text-center text-green">Health Care Center</h1>
+<div class="container my-4 mt-4" style="background: black; color: white; border-radius: 15px; padding: 40px;">
+    <form id="myForm" action="/predict" method="POST">
+        <input type="hidden" name="symptoms" />
         <div class="form-group">
-            <label for="symptoms" style="font-size: 24px;">Select Symptoms:</label>
-            <select class="form-control symptoms" id="symptoms" name="symptoms">
-                <option disabled value="" multiple>select</option>
+            <label for="symptoms">Select Symptoms:</label>
+            <select class="form-control symptoms" id="symptoms">
+                <option selected value="" multiple>select</option>
                 {%for s in symptoms%}
                     <option value="{{s}}">{{s}}</option>
                 {%endfor%}
             </select>
-
         </div>
         <br>
         {#<button type="button" id="startSpeechRecognition" class="btn btn-primary" style="margin-left:3px;border:1px solid white; border-radius:20px;">
@@ -319,8 +318,11 @@ text-shadow: 0px 0px 2px #685d5d;"><b><i>MEDICAL RECOMMENDATION SYSTEM</i></b></
         {% endif %}
         <br>
 
-        <button type="submit" class="btn btn-danger btn-lg" style="width: 100%; padding: 14px; margin-bottom: 5px; background-color: #EC4444;">Predict</button>
+
+        <button type="button" onclick="sendDataToBackend()" class="btn btn-danger btn-lg" style="width: 100%; padding: 14px; margin-bottom: 5px;background-color: #EC4444;">Predict</button>
     </form>
+    
+
 </div>
 
 
@@ -476,7 +478,7 @@ text-shadow: 0px 0px 2px #685d5d;"><b><i>MEDICAL RECOMMENDATION SYSTEM</i></b></
             const result = event.results[0][0].transcript;
             transcriptionDiv.textContent = result;
         };
-
+        
         recognition.onend = function () {
             console.log('Speech recognition ended.');
         };
@@ -485,13 +487,14 @@ text-shadow: 0px 0px 2px #685d5d;"><b><i>MEDICAL RECOMMENDATION SYSTEM</i></b></
     }
 </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@3.0.1/dist/js/multi-select-tag.js"></script>
     <script>
-
-    $(document).ready(function() {
+        
+        $(document).ready(function() {
     // Load options from sue.txt
         $.get('sue.txt', function(data) {
             // Split the text into an array of lines
@@ -507,6 +510,7 @@ text-shadow: 0px 0px 2px #685d5d;"><b><i>MEDICAL RECOMMENDATION SYSTEM</i></b></
             $('.select2').select2();
         });
     });
+
 
     function MultiSelectTag(el, customs = { shadow: false, rounded: true }) {
         // Initialize variables
@@ -618,7 +622,7 @@ text-shadow: 0px 0px 2px #685d5d;"><b><i>MEDICAL RECOMMENDATION SYSTEM</i></b></
             inputBody = document.createElement('inputBody');
             inputBody.classList.add('input-body');
             inputBody.append(input);
-    
+            
             body.append(inputContainer);
     
             // .btn-container
@@ -804,7 +808,7 @@ text-shadow: 0px 0px 2px #685d5d;"><b><i>MEDICAL RECOMMENDATION SYSTEM</i></b></
     }
 </script>
 <script>
-    
+let value = null
 new MultiSelectTag('symptoms', {
     rounded: true,    // default true
     shadow: true,      // default false
@@ -816,10 +820,52 @@ new MultiSelectTag('symptoms', {
     },
     onChange: function(values) {
         console.log(values)
+        value = values;
+        console.log(value);
+        
     }
 })
+
+function sendDataToBackend() {
+    // Modify the value of the variable with desired data
+    myData = []
+    data = [];
+    for (v of value) {
+        myData.push(v.value);
+    }
+
+    const form = document.querySelector('#myForm');
+
+    var data = JSON.stringify(myData);
+    console.log(data);
+
+    const symptoms = document.querySelector('[name="symptoms"]');
+    symptoms.value = data;
+    console.log(symptoms);
+
+
+    form.submit();
+
+
+    return;
+    
+    // Send the variable value to Flask backend
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/predict", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            // Request was successful
+            console.log(xhr.responseText);
+        }
+    }
+    console.log('clicked')
+    var data = JSON.stringify({ symptoms: myData });
+    xhr.send(data);
+}
+
+
 </script>
-<script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@3.0.1/dist/js/multi-select-tag.js"></script>
 </body>
 
 </html>
