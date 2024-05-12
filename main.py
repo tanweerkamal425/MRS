@@ -1,8 +1,8 @@
-from flask import Flask, request, render_template, jsonify  # Import jsonify
+from flask import Flask, request, render_template, redirect, url_for, jsonify  # Import jsonify
 import numpy as np
 import pandas as pd
 import pickle
-
+import json
 
 # flask app
 app = Flask(__name__)
@@ -70,10 +70,13 @@ def index():
 @app.route('/predict', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
+        # data = request.json
+        # symptoms = data.get('symptoms')
         symptoms = request.form.get('symptoms')
+        data = json.loads(symptoms)
+        symptoms = data
         # mysysms = request.form.get('mysysms')
         # print(mysysms)
-        print(symptoms)
         if symptoms =="Symptoms":
             message = "Please either write symptoms or you have written misspelled symptoms"
             return render_template('index.html', message=message)
@@ -81,10 +84,12 @@ def home():
 
             # Split the user's input into a list of symptoms (assuming they are comma-separated)
             if symptoms is not None:
-                user_symptoms = [s.strip() for s in symptoms.split(',')]
+                # user_symptoms = [s.strip() for s in symptoms.split(',')]
+                user_symptoms = symptoms
             else:
                 # Handle the case where symptoms is None
                 user_symptoms = []
+                return render_template('index.html', symptoms=sym_array, user_sym=user_symptoms)
 
             # user_symptoms = [s.strip() for s in symptoms.split(',')]
             # Remove any extra characters, if any
@@ -95,12 +100,9 @@ def home():
             my_precautions = []
             for i in precautions[0]:
                 my_precautions.append(i)
+            return render_template('index.html', predicted_disease=predicted_disease, dis_des=dis_des, my_precautions=my_precautions, medications=medications, my_diet=rec_diet, workout=workout, symptoms=sym_array, user_sym=user_symptoms)
 
-            return render_template('index.html', predicted_disease=predicted_disease, dis_des=dis_des,
-                                   my_precautions=my_precautions, medications=medications, my_diet=rec_diet,
-                                   workout=workout, symptoms=sym_array)
-
-    return render_template('index.html', symptoms=sym_array)
+    return render_template('index.html', symptoms=sym_array, user_sym=user_symptoms)
 
 
 
