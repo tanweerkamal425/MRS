@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import json
+import ast
 
 # flask app
 app = Flask(__name__)
@@ -96,11 +97,16 @@ def home():
             # user_symptoms = [symptom.strip("[]' ") for symptom in user_symptoms]
             predicted_disease = get_predicted_value(user_symptoms)
             dis_des, precautions, medications, rec_diet, workout = helper(predicted_disease)
+            medications = medications[0]
+            rec_diet = rec_diet[0]
+            medications = ast.literal_eval(medications)
+            rec_diet = ast.literal_eval(rec_diet)
+            
 
             my_precautions = []
             for i in precautions[0]:
                 my_precautions.append(i)
-            return render_template('index.html', predicted_disease=predicted_disease, dis_des=dis_des, my_precautions=my_precautions, medications=medications, my_diet=rec_diet, workout=workout, symptoms=sym_array, user_sym=user_symptoms)
+            return render_template('index.html', predicted_disease=predicted_disease, dis_des=dis_des, my_precautions=my_precautions, medications=medications, my_diet=rec_diet, workout=workout, symptoms=sym_array, user_sym=user_symptoms, msg="Disease predicted successfully")
 
     return render_template('index.html', symptoms=sym_array, user_sym=user_symptoms)
 
