@@ -97,7 +97,8 @@ def home():
             # user_symptoms = [symptom.strip("[]' ") for symptom in user_symptoms]
             predicted_disease = get_predicted_value(user_symptoms)
             dis_des, precautions, medications, rec_diet, workout = helper(predicted_disease)
-            medications = medications[0]
+            if medications:
+                medications = medications[0]
             rec_diet = rec_diet[0]
             medications = ast.literal_eval(medications)
             rec_diet = ast.literal_eval(rec_diet)
